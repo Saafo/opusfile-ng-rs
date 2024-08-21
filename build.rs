@@ -1,18 +1,19 @@
-use std::{env::var, path::PathBuf};
-
-use bindgen::{Builder, CargoCallbacks};
-
 fn main() {
-    let out_path =
-        PathBuf::from(var("OUT_DIR").expect("failed to get OUT_DIR environment variable"));
-    let bindings = Builder::default()
+    #[cfg(feature = "bindgen")]
+    bindgen();
+}
+
+#[cfg(feature = "bindgen")]
+fn bindgen() {
+    let bindings = bindgen::Builder::default()
         .header("wrapper.h")
-        .parse_callbacks(Box::new(CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .blocklist_file(".*stdio.h")
         .generate()
         .expect("Failed to generate bindings");
 
+    let pwd = std::env::current_dir().unwrap();
     bindings
-        .write_to_file(out_path.join("bindings.rs"))
+        .write_to_file(pwd.join("src").join("bindings.rs"))
         .expect("Failed to write bindings");
 }
